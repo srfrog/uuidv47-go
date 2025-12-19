@@ -1,6 +1,6 @@
 # uuidv47-go
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/srfrog/uuidv47-go.svg)](https://pkg.go.dev/github.com/srfrog/uuidv47-go) [![Go Report Card](https://goreportcard.com/badge/github.com/srfrog/uuidv47-go)](https://goreportcard.com/report/github.com/srfrog/uuidv47-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/srfrog/uuidv47-go.svg)](https://pkg.go.dev/github.com/srfrog/uuidv47-go) [![Go Report Card](https://goreportcard.com/badge/github.com/srfrog/uuidv47-go)](https://goreportcard.com/report/github.com/srfrog/uuidv47-go) ![go-ci](https://github.com/srfrog/uuidv47-go/actions/workflows/go-ci.yml/badge.svg) ![codeql](https://github.com/srfrog/uuidv47-go/actions/workflows/codeql-analysis.yml/badge.svg)
 
 **UUIDv7-in / UUIDv4-out** - SipHash-masked timestamp transformation
 
@@ -415,6 +415,10 @@ A: This library focuses on the transformation. Use existing Go UUIDv7 libraries 
 A: Yes! Same algorithm, same key format, same output. You can decode Go-encoded façades in C and vice versa.
 
 ---
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
 
 ## License
 
