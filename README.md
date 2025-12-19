@@ -418,7 +418,7 @@ A: Yes! Same algorithm, same key format, same output. You can decode Go-encoded 
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE\_OF\_CONDUCT.md](<CODE_OF_CONDUCT.md>) before contributing.
 
 ## License
 
