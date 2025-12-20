@@ -1,3 +1,3 @@
-module github.com/srfrog/uuid47-go
+module github.com/srfrog/uuidv47-go
 
 go 1.25.5
