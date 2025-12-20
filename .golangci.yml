@@ -1,0 +1,90 @@
+# golangci-lint v2 configuration
+# https://golangci-lint.run/usage/configuration/
+
+version: "2"
+run:
+  # Timeout for analysis
+  timeout: 5m
+
+  # Include test files
+  tests: true
+
+  # Build tags
+  build-tags: []
+
+# Output configuration
+output:
+  # Format: colored-line-number, line-number, json, colored-tab, tab, checkstyle, code-climate, junit-xml, github-actions, teamcity
+  formats:
+    text:
+      path: stdout
+      colors: true
+
+      # Print lines of code with issue
+      print-issued-lines: true
+
+      # Print linter name in the end of issue text
+      print-linter-name: true
+
+  # Show statistics per linter
+  show-stats: false
+
+# Linters configuration
+linters:
+  default: fast
+
+  disable:
+    - funcorder
+    - godot
+    - mnd
+    - nlreturn
+    - testpackage
+    - wsl
+    - wsl_v5
+
+  exclusions:
+    warn-unused: false
+    # Directories and files to skip
+    paths:
+      - .github
+      - vendor
+      - '.*\.md$'
+
+  # Exclude rules for specific paths and linters
+    rules:
+      # Exclude some linters from running on test files
+      - path: _test\.go
+        linters:
+          - errcheck
+
+      # Exclude linters for example files
+      - path: example.*\.go
+        linters:
+          - errcheck
+
+      # Independently of option `exclude` we use default exclude patterns
+      - linters:
+          - errcheck
+        text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked"
+
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+
+issues:
+  # Make issues output unique by line
+  uniq-by-line: true
+
+  # Maximum issues count per one linter (0 = unlimited)
+  max-issues-per-linter: 0
+
+  # Maximum count of issues with the same text (0 = unlimited)
+  max-same-issues: 0
+
+  # Show only new issues (default false)
+  new: false
+
+  # Fix found issues (if supported by the linter)
+  fix: false
