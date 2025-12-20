@@ -75,28 +75,25 @@ func siphash24(in []byte, k0, k1 uint64) uint64 {
 	for i := 0; i < end; i += 8 {
 		m := rd64le(in[i:])
 		v3 ^= m
-
-		// 2 compression rounds
-		for range 2 {
-			v0 += v1
-			v2 += v3
-			v1 = rotl64(v1, 13)
-			v3 = rotl64(v3, 16)
-			v1 ^= v0
-			v3 ^= v2
-			v0 = rotl64(v0, 32)
-			v2 += v1
-			v0 += v3
-			v1 = rotl64(v1, 17)
-			v3 = rotl64(v3, 21)
-			v1 ^= v2
-			v3 ^= v0
-			v2 = rotl64(v2, 32)
-		}
+		sipRound2(&v0, &v1, &v2, &v3)
 		v0 ^= m
 	}
 
 	// Process last 0-7 bytes
+	b |= processTailBytes(in, end, inlen)
+
+	v3 ^= b
+	sipRound2(&v0, &v1, &v2, &v3)
+	v0 ^= b
+
+	v2 ^= 0xff
+	sipRound4(&v0, &v1, &v2, &v3)
+
+	return v0 ^ v1 ^ v2 ^ v3
+}
+
+// processTailBytes handles the last 0-7 bytes of input
+func processTailBytes(in []byte, end, inlen int) uint64 {
 	var t uint64
 	switch inlen & 7 {
 	case 7:
@@ -120,45 +117,47 @@ func siphash24(in []byte, k0, k1 uint64) uint64 {
 	case 1:
 		t |= uint64(in[end+0]) << 0
 	}
-	b |= t
+	return t
+}
 
-	v3 ^= b
+// sipRound2 performs 2 SipHash compression rounds
+func sipRound2(v0, v1, v2, v3 *uint64) {
 	for range 2 {
-		v0 += v1
-		v2 += v3
-		v1 = rotl64(v1, 13)
-		v3 = rotl64(v3, 16)
-		v1 ^= v0
-		v3 ^= v2
-		v0 = rotl64(v0, 32)
-		v2 += v1
-		v0 += v3
-		v1 = rotl64(v1, 17)
-		v3 = rotl64(v3, 21)
-		v1 ^= v2
-		v3 ^= v0
-		v2 = rotl64(v2, 32)
+		*v0 += *v1
+		*v2 += *v3
+		*v1 = rotl64(*v1, 13)
+		*v3 = rotl64(*v3, 16)
+		*v1 ^= *v0
+		*v3 ^= *v2
+		*v0 = rotl64(*v0, 32)
+		*v2 += *v1
+		*v0 += *v3
+		*v1 = rotl64(*v1, 17)
+		*v3 = rotl64(*v3, 21)
+		*v1 ^= *v2
+		*v3 ^= *v0
+		*v2 = rotl64(*v2, 32)
 	}
-	v0 ^= b
+}
 
-	v2 ^= 0xff
+// sipRound4 performs 4 SipHash finalization rounds
+func sipRound4(v0, v1, v2, v3 *uint64) {
 	for range 4 {
-		v0 += v1
-		v2 += v3
-		v1 = rotl64(v1, 13)
-		v3 = rotl64(v3, 16)
-		v1 ^= v0
-		v3 ^= v2
-		v0 = rotl64(v0, 32)
-		v2 += v1
-		v0 += v3
-		v1 = rotl64(v1, 17)
-		v3 = rotl64(v3, 21)
-		v1 ^= v2
-		v3 ^= v0
-		v2 = rotl64(v2, 32)
+		*v0 += *v1
+		*v2 += *v3
+		*v1 = rotl64(*v1, 13)
+		*v3 = rotl64(*v3, 16)
+		*v1 ^= *v0
+		*v3 ^= *v2
+		*v0 = rotl64(*v0, 32)
+		*v2 += *v1
+		*v0 += *v3
+		*v1 = rotl64(*v1, 17)
+		*v3 = rotl64(*v3, 21)
+		*v1 ^= *v2
+		*v3 ^= *v0
+		*v2 = rotl64(*v2, 32)
 	}
-	return v0 ^ v1 ^ v2 ^ v3
 }
 
 // Version returns the UUID version
@@ -254,6 +253,11 @@ func hexval(c byte) int {
 	return -1
 }
 
+// Precomputed positions for each byte in the UUID string
+var uuidBytePositions = [16]int{
+	0, 2, 4, 6, 9, 11, 14, 16, 19, 21, 24, 26, 28, 30, 32, 34,
+}
+
 // Parse parses a UUID string in canonical format (8-4-4-4-12)
 func Parse(s string) (UUID, error) {
 	if len(s) != 36 {
@@ -266,23 +270,8 @@ func Parse(s string) (UUID, error) {
 	}
 
 	var out UUID
-	// Parse directly without intermediate array allocation
-	// Positions: 0-1, 2-3, 4-5, 6-7, 9-10, 11-12, 14-15, 16-17,
-	//            19-20, 21-22, 24-25, 26-27, 28-29, 30-31, 32-33, 34-35
 	for i := range 16 {
-		var pos int
-		if i < 4 {
-			pos = i * 2
-		} else if i < 6 {
-			pos = i*2 + 1
-		} else if i < 8 {
-			pos = i*2 + 2
-		} else if i < 10 {
-			pos = i*2 + 3
-		} else {
-			pos = i*2 + 4
-		}
-
+		pos := uuidBytePositions[i]
 		h := hexval(s[pos])
 		l := hexval(s[pos+1])
 		if h < 0 || l < 0 {
